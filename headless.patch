@@ -1,23 +1,22 @@
-diff --git a/Tools/gazebo_sitl_multiple_run.sh b/Tools/gazebo_sitl_multiple_run.sh
-index 292272e2bd..9019b0d21c 100755
---- a/Tools/gazebo_sitl_multiple_run.sh
-+++ b/Tools/gazebo_sitl_multiple_run.sh
+diff --git a/Tools/simulation/gazebo-classic/sitl_multiple_run.sh b/Tools/simulation/gazebo-classic/sitl_multiple_run.sh
+index 1d8cdbf8bc..6921187fca 100755
+--- a/Tools/simulation/gazebo-classic/sitl_multiple_run.sh
++++ b/Tools/simulation/gazebo-classic/sitl_multiple_run.sh
 @@ -95,6 +95,7 @@ fi
  
  echo "Starting gazebo"
- gzserver ${src_path}/Tools/sitl_gazebo/worlds/${world}.world --verbose $ros_args &
+ gzserver ${src_path}/Tools/simulation/gazebo-classic/sitl_gazebo-classic/worlds/${world}.world --verbose $ros_args &
 +SERVER_PID=$!
  sleep 5
  
  n=0
-@@ -136,5 +137,12 @@ else
+@@ -136,5 +137,11 @@ else
  fi
  trap "cleanup" SIGINT SIGTERM EXIT
  
 -echo "Starting gazebo client"
 -gzclient
 +if [ "x$HEADLESS" = "x1" ]; then
-+       echo "Waiting for gazebo server"
 +  wait $SERVER_PID
 +else
 +  echo "Starting gazebo client"
@@ -25,4 +24,3 @@ index 292272e2bd..9019b0d21c 100755
 +fi
 +
 +exit 0
-

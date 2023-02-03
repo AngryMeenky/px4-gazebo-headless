@@ -95,7 +95,7 @@ fi
 if [ $? -eq 0 ]; then
     if [ "${count}" -gt 1 ]; then
         cd ${FIRMWARE_DIR} &&
-        HEADLESS=1 Tools/gazebo_sitl_multiple_run.sh -n $count -m $vehicle -w $world
+        HEADLESS=1 Tools/simulation/gazebo-classic/sitl_multiple_run.sh -n $count -m $vehicle -w $world
     else
         cd ${FIRMWARE_DIR} &&
         HEADLESS=1 make px4_sitl gazebo_${vehicle}__${world}

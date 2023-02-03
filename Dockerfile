@@ -48,7 +48,7 @@ RUN pip3 install --upgrade pip && \
 COPY headless.patch ${WORKSPACE_DIR}
 RUN git clone https://github.com/PX4/PX4-Autopilot.git ${FIRMWARE_DIR} && \
     cd ${FIRMWARE_DIR} && \
-    git checkout v1.13.2 && \
+    git checkout main && \
     git submodule update --init --recursive && \
     git apply ${WORKSPACE_DIR}/headless.patch && \
     DONT_RUN=1 make px4_sitl gazebo
