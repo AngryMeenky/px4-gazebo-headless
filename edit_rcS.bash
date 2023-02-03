@@ -27,18 +27,25 @@ function get_host_ip {
     echo "$(ip route | awk '/default/ { print $3 }')"
 }
 
-if [ "$#" -eq 1 ]; then
-    if ! is_ip_valid $1; then exit 1; fi
-    echo "14540 will be associated to $1"
-    API_PARAM="-t $1"
-elif [ "$#" -eq 2 ]; then
-    if ! is_ip_valid $1 || ! is_ip_valid $2; then exit 1; fi
-    echo "14550 will be associated to $1"
-    echo "14540 will be associated to $2"
-    QGC_PARAM="-t $1"
-    API_PARAM="-t $2"
-elif [ "$#" -gt 2 ]; then
-    echo "Invalid parameters: [<IP for 14550> <IP for 14540>] | [<IP for 14540>]"
+OPTIND=1
+
+while getopts "a:q:" opt; do
+    case "$opt" in
+    a)  if ! is_ip_valid $OPTARG; then exit 1; fi
+        API_PARAM="-t ${OPTARG}"
+        echo "14540 will be associated to ${OPTARG}"
+        ;;
+    q)  if ! is_ip_valid $OPTARG; then exit 1; fi
+        QGC_PARAM="-t ${OPTARG}"
+        echo "14550 will be associated to ${OPTARG}"
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if [ "$#" -gt 0 ]; then
+    echo "Invalid parameters: -q <IP for 14550> | -a <IP for 14540>"
     exit 1;
 fi
 

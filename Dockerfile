@@ -45,22 +45,26 @@ RUN pip3 install --upgrade pip && \
                  toml \
                  pyyaml
 
-RUN git clone https://github.com/PX4/PX4-Autopilot.git ${FIRMWARE_DIR}
-RUN git -C ${FIRMWARE_DIR} checkout main
-RUN git -C ${FIRMWARE_DIR} submodule update --init --recursive
+COPY headless.patch ${WORKSPACE_DIR}
+RUN git clone https://github.com/PX4/PX4-Autopilot.git ${FIRMWARE_DIR} && \
+    cd ${FIRMWARE_DIR} && \
+    git checkout v1.13.2 && \
+    git submodule update --init --recursive && \
+    git apply ${WORKSPACE_DIR}/headless.patch && \
+    DONT_RUN=1 make px4_sitl gazebo
 
 COPY edit_rcS.bash ${WORKSPACE_DIR}
 COPY entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 
-RUN ["/bin/bash", "-c", " \
-    cd ${FIRMWARE_DIR} && \
-    DONT_RUN=1 make px4_sitl gazebo && \
-    DONT_RUN=1 make px4_sitl gazebo \
-"]
+#RUN ["/bin/bash", "-c", " \
+#    cd ${FIRMWARE_DIR} && \
+#    DONT_RUN=1 make px4_sitl gazebo && \
+#    DONT_RUN=1 make px4_sitl gazebo \
+#"]
 
 COPY sitl_rtsp_proxy ${SITL_RTSP_PROXY}
-RUN cmake -B${SITL_RTSP_PROXY}/build -H${SITL_RTSP_PROXY}
-RUN cmake --build ${SITL_RTSP_PROXY}/build
+RUN cmake -B${SITL_RTSP_PROXY}/build -H${SITL_RTSP_PROXY} && \
+    cmake --build ${SITL_RTSP_PROXY}/build
 
 ENTRYPOINT ["/root/entrypoint.sh"]
