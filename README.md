@@ -17,7 +17,7 @@ In this mode, the simulator will be available from your host (e.g. run the follo
 docker run --rm -it meenky/px4-multi-gazebo-headless:1.13.2 -c 2
 ```
 
-In this configuration, the container will send MAVLink to the host on ports 14550 & 14551 (for QGC) and 14540 & 14541 (for e.g. MAVSDK).
+In this configuration, the container will send MAVLink to the host on ports 14550 (for QGC) and 14540 & 14541 (for e.g. MAVSDK).
 
 ### Run with a custom IP for the second MAVLink interface
 
