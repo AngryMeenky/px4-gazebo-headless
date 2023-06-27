@@ -53,9 +53,11 @@ RUN git clone https://github.com/PX4/PX4-Autopilot.git ${FIRMWARE_DIR} && \
     git apply ${WORKSPACE_DIR}/headless.patch && \
     DONT_RUN=1 make px4_sitl gazebo
 
+COPY gazebo_hitl_multiple_run.sh ${FIRMWARE_DIR}/Tools/
+COPY iris_hitl.sdf.jinja ${FIRMWARE_DIR}/Tools/sitl_gazebo/models/iris_hitl/
 COPY edit_rcS.bash ${WORKSPACE_DIR}
 COPY entrypoint.sh /root/entrypoint.sh
-RUN chmod +x /root/entrypoint.sh
+RUN chmod +x /root/entrypoint.sh ${FIRMWARE_DIR}/Tools/gazebo_hitl_multiple_run.sh
 
 #RUN ["/bin/bash", "-c", " \
 #    cd ${FIRMWARE_DIR} && \
