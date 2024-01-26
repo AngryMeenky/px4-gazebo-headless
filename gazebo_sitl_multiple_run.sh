@@ -20,7 +20,7 @@ function spawn_model() {
 	X=${X:=0.0}
 	Y=${Y:=$((3*${N}))}
 
-	SUPPORTED_MODELS=("iris_hitl" "standard_vtol_hitl")
+	SUPPORTED_MODELS=("iris" "plane" "standard_vtol" "rover" "r1_rover" "typhoon_h480")
 	if [[ " ${SUPPORTED_MODELS[*]} " != *"$MODEL"* ]];
 	then
 		echo "ERROR: Currently only vehicle model $MODEL is not supported!"
@@ -35,21 +35,7 @@ function spawn_model() {
 	pushd "$working_dir" &>/dev/null
 	echo "starting instance $N in $(pwd)"
 	../bin/px4 -i $N -d "$build_path/etc" -w sitl_${MODEL}_${N} -s etc/init.d-posix/rcS >out.log 2>err.log &
-	python3 ${src_path}/Tools/sitl_gazebo/scripts/jinja_gen.py \
-		      ${src_path}/Tools/sitl_gazebo/models/${MODEL}/${MODEL}.sdf.jinja \
-					${src_path}/Tools/sitl_gazebo \
-					--mavlink_tcp_port $((4560+${N})) \
-					--mavlink_udp_port $((14560+${N})) \
-					--mavlink_id $((1+${N})) \
-					--gst_udp_port $((5600+${N})) \
-					--video_uri $((5600+${N})) \
-					--mavlink_cam_udp_port $((14530+${N})) \
-					--serial_enabled 1 \
-					--serial_device ${PX4_SERIAL_ROOT}${N} \
-					--serial_baudrate ${PX4_BAUD_RATE} \
-					--qgc_udp_port $((14550+${N})) \
-					--sdk_udp_port $((14540+${N})) \
-					--output-file /tmp/${MODEL}_${N}.sdf
+	python3 ${src_path}/Tools/sitl_gazebo/scripts/jinja_gen.py ${src_path}/Tools/sitl_gazebo/models/${MODEL}/${MODEL}.sdf.jinja ${src_path}/Tools/sitl_gazebo --mavlink_tcp_port $((4560+${N})) --mavlink_udp_port $((14560+${N})) --mavlink_id $((1+${N})) --gst_udp_port $((5600+${N})) --video_uri $((5600+${N})) --mavlink_cam_udp_port $((14530+${N})) --output-file /tmp/${MODEL}_${N}.sdf
 
 	echo "Spawning ${MODEL}_${N} at ${X} ${Y}"
 
@@ -61,17 +47,15 @@ function spawn_model() {
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]
 then
-	echo "Usage: $0 [-n <num_vehicles>] [-m <vehicle_model>] [-w <world>] [-s <script>] [-b baud] [-r serial root]"
+	echo "Usage: $0 [-n <num_vehicles>] [-m <vehicle_model>] [-w <world>] [-s <script>]"
 	echo "-s flag is used to script spawning vehicles e.g. $0 -s iris:3,plane:2"
 	exit 1
 fi
 
-while getopts b:r:n:m:w:s:t:l: option
+while getopts n:m:w:s:t:l: option
 do
 	case "${option}"
 	in
-	  b) BAUD_RATE=${OPTARG};;
-		r) SERIAL_ROOT=${OPTARG};;
 		n) NUM_VEHICLES=${OPTARG};;
 		m) VEHICLE_MODEL=${OPTARG};;
 		w) WORLD=${OPTARG};;
@@ -84,9 +68,7 @@ done
 num_vehicles=${NUM_VEHICLES:=3}
 world=${WORLD:=empty}
 target=${TARGET:=px4_sitl_default}
-vehicle_model=${VEHICLE_MODEL:="iris_hitl"}
-export PX4_SERIAL_ROOT=${SERIAL_ROOT:="/tty/ACM"}
-export PX4_BAUD_RATE=${BAUD_RATE:=921600}
+vehicle_model=${VEHICLE_MODEL:="iris"}
 export PX4_SIM_MODEL=${vehicle_model}
 
 echo ${SCRIPT}

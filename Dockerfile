@@ -10,6 +10,7 @@ ENV LANG C.UTF-8
 
 RUN apt-get update && \
     apt-get install -y bc \
+                       vim \
                        cmake \
                        curl \
                        gazebo9 \
@@ -33,9 +34,8 @@ RUN apt-get update && \
                        xvfb && \
     apt-get -y autoremove && \
     apt-get clean autoclean && \
-    rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
-
-RUN pip3 install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/* && \
+    pip3 install --upgrade pip && \
     pip3 install empy \
                  future \
                  jinja2 \
@@ -45,19 +45,23 @@ RUN pip3 install --upgrade pip && \
                  toml \
                  pyyaml
 
-COPY headless.patch ${WORKSPACE_DIR}
+COPY hitl.patch ${WORKSPACE_DIR}/
 RUN git clone https://github.com/PX4/PX4-Autopilot.git ${FIRMWARE_DIR} && \
     cd ${FIRMWARE_DIR} && \
-    git checkout main && \
+    git checkout v1.13.2 && \
     git submodule update --init --recursive && \
-    git apply ${WORKSPACE_DIR}/headless.patch && \
-    DONT_RUN=1 make px4_sitl gazebo
+    cd ${FIRMWARE_DIR}/Tools/sitl_gazebo && \
+    git apply ${WORKSPACE_DIR}/hitl.patch && \
+    cd ${FIRMWARE_DIR} && \
+    DONT_RUN=1 make px4_sitl gazebo && \
+    rm ${WORKSPACE_DIR}/*.patch
 
-COPY gazebo_hitl_multiple_run.sh ${FIRMWARE_DIR}/Tools/
-COPY iris_hitl.sdf.jinja ${FIRMWARE_DIR}/Tools/sitl_gazebo/models/iris_hitl/
-COPY edit_rcS.bash ${WORKSPACE_DIR}
-COPY entrypoint.sh /root/entrypoint.sh
-RUN chmod +x /root/entrypoint.sh ${FIRMWARE_DIR}/Tools/gazebo_hitl_multiple_run.sh
+COPY gazebo_hitl_multiple_run.sh gazebo_sitl_multiple_run.sh \
+     iris_hitl.sdf.jinja edit_rcS.bash entrypoint.sh /root/
+RUN mv /root/gazebo_hitl_multiple_run.sh /root/gazebo_sitl_multiple_run.sh ${FIRMWARE_DIR}/Tools/ && \
+    mv /root/iris_hitl.sdf.jinja ${FIRMWARE_DIR}/Tools/sitl_gazebo/models/iris_hitl/ && \
+    chmod +x /root/entrypoint.sh ${FIRMWARE_DIR}/Tools/gazebo_hitl_multiple_run.sh \
+                                 ${FIRMWARE_DIR}/Tools/gazebo_sitl_multiple_run.sh
 
 #RUN ["/bin/bash", "-c", " \
 #    cd ${FIRMWARE_DIR} && \
